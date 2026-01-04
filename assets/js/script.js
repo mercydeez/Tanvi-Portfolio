@@ -130,25 +130,44 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (contactForm) {
         contactForm.addEventListener('submit', function(e) {
-            // Form will be handled by Formspree
-            // Add any custom validation or animations here
-            
+            e.preventDefault();
+
             const submitBtn = contactForm.querySelector('.btn-submit');
             const originalText = submitBtn.innerHTML;
-            
+
             // Show loading state
             submitBtn.innerHTML = '<span>Sending...</span>';
             submitBtn.disabled = true;
-            
-            // Note: Formspree will handle the actual submission
-            // This is just for UX enhancement
-            
-            // Reset button after a delay (for demo purposes)
-            // In production, this would be handled by the form response
-            setTimeout(function() {
+
+            // Perform AJAX submit
+            const url = contactForm.getAttribute('action');
+            const formData = new FormData(contactForm);
+
+            fetch(url, {
+                method: 'POST',
+                body: formData
+            })
+            .then(function(response) {
+                return response.json().catch(function() {
+                    return { success: false, message: 'Server error. Please try again.' };
+                });
+            })
+            .then(function(data) {
+                if (data && (data.success === true || data.success === 'true')) {
+                    showFormMessage('Thank you for your message. We will respond shortly.', 'success');
+                    contactForm.reset();
+                } else {
+                    var msg = (data && data.message) ? data.message : 'Submission failed. Please try again.';
+                    showFormMessage(msg, 'error');
+                }
+            })
+            .catch(function(err) {
+                showFormMessage('Network error. Please check your connection and try again.', 'error');
+            })
+            .finally(function() {
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
-            }, 2000);
+            });
         });
     }
     
@@ -324,3 +343,21 @@ document.addEventListener('DOMContentLoaded', function() {
     );
     
 });
+
+// Display form submission message
+function showFormMessage(message, type) {
+    var existingMsg = document.querySelector('.form-message');
+    if (existingMsg) existingMsg.remove();
+    
+    var msgEl = document.createElement('div');
+    msgEl.className = 'form-message form-message--' + type;
+    msgEl.textContent = message;
+    
+    var form = document.getElementById('contactForm');
+    if (form) {
+        form.parentNode.insertBefore(msgEl, form.nextSibling);
+        setTimeout(function() {
+            msgEl.remove();
+        }, 6000);
+    }
+}
