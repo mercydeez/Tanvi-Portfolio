@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'color: #C4A35A; font-size: 24px; font-weight: bold;'
     );
     console.log(
-        '%cSinger • Anchor • TV Host',
+        '%cClassical Vocalist • Television Host',
         'color: #6B6560; font-size: 14px;'
     );
     
